@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyCamp: Полный курс по Python</title>
+    <style>
+        :root {
+            --bg-dark: #1e1e1e;
+            --bg-sidebar: #252526;
+            --text-light: #d4d4d4;
+            --accent: #007acc;
+            --success: #4caf50;
+            --console-bg: #000000;
+            --console-text: #00ff00;
+        }
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-dark); color: var(--text-light); }
+        
+        .app-container { display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Левая панель (Навигация) */
+        .sidebar {
+            width: 250px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid #333;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .sidebar h2 { font-size: 1.2rem; margin-top: 0; color: var(--accent); }
+        .module-title { font-weight: bold; color: #858585; font-size: 0.9rem; margin: 1rem 0 0.5rem 0; }
+        .lesson-list { list-style: none; padding: 0; margin: 0; }
+        .lesson-list li { margin-bottom: 0.5rem; }
+        .lesson-list button {
+            width: 100%;
+            text-align: left;
+            padding: 0.5rem;
+            border: none;
+            background: none;
+            color: var(--text-light);
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+        .lesson-list button:hover { background-color: #333; }
+        .lesson-list button.active { background-color: var(--accent); color: #000; }
+        .lesson-list button.completed { background-color: var(--success); color: #000; }
+
+        /* Основной контент */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; }
+        
+        .lesson-header { 
+            padding: 1rem; 
+            border-bottom: 1px solid #333; 
+            background-color: #2d2d2d;
+            font-weight: bold;
+        }
+        
+        .lesson-body { 
+            flex-grow: 1; 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 1rem; 
+            padding: 1rem; 
+            overflow: hidden;
+        }
+        
+        .instructions {
+            background-color: #2d2d2d;
+            border-radius: 6px;
+            padding: 1rem;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+        .instructions code { background-color: #333; color: #ce9178; padding: 2px 4px; border-radius: 3px; }
+        .instructions pre { background-color: #1e1e1e; padding: 1rem; border-radius: 4px; overflow-x: auto; }
+
+        .code-editor {
+            position: relative;
+            background-color: var(--bg-dark);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+        }
+        .editor-controls {
+            padding: 0.5rem;
+            background-color: #252526;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+        }
+        textarea {
+            width: 100%;
+            height: 100%;
+            flex-grow: 1;
+            padding: 1rem;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            border: none;
+            outline: none;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            resize: none;
+            white-space: pre;
+        }
+        
+        .console {
+            grid-column: 1 / -1;
+            background-color: var(--console-bg);
+            color: var(--console-text);
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #080808;
+        }
+        .btn-run { background-color: var(--accent); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-run:disabled { background-color: #555; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>PyCamp</h2>
+        <div class="module-title">Модуль 1: Основы</div>
+        <ul class="lesson-list" id="lessonList">
+            <li><button data-lesson="0" class="active">01. Переменные и типы данных</button></li>
+            <li><button data-lesson="1">02. Условные операторы (if/else)</button></li>
+            <li><button data-lesson="2">03. Циклы (for, while)</button></li>
+            <li><button data-lesson="3">04. Списки и словари</button></li>
+        </ul>
+        <div class="module-title">Модуль 2: Функции</div>
+        <ul class="lesson-list">
+            <li><button data-lesson="4">05. Создание функций</button></li>
+            <li><button data-lesson="5">06. Аргументы и возвращаемые значения</button></li>
+        </ul>
+        <div class="module-title">Модуль 3: ООП</div>
+        <ul class="lesson-list">
+            <li><button data-lesson="6">07. Классы и объекты</button></li>
+            <li><button data-lesson="7">08. Наследование</button></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="lesson-header" id="lessonTitle">Загрузка...</div>
+        <div class="lesson-body">
+            <div class="instructions" id="instructions">
+                Инструкции урока появятся здесь.
+            </div>
+            <div class="code-editor">
+                <div class="editor-controls">
+                    <span id="taskGoal"></span>
+                    <button class="btn-run" id="runBtn">▶ Выполнить код</button>
+                </div>
+                <textarea id="codeInput">print("Hello, PyCamp!")</textarea>
+            </div>
+        </div>
+        <div class="console" id="consoleOutput">Вывод программы появится здесь...</div>
+    </div>
+</div>
+
+<script>
+// --- БАЗА ДАННЫХ УРОКОВ ---
+const lessons = [
+    {
+        id: 0,
+        title: "01. Переменные и типы данных",
+        goal: "Создайте переменную name со своим именем и выведите её.",
+        instructions: `
+            <h3>Переменные</h3>
+            <p>Переменная — это именованная область памяти. В Python не нужно указывать тип данных.</p>
+            <pre><code>name = "Алексей"
+age = 25
+is_student = True</code></pre>
+            <h3>Задание:</h3>
+            <p>В редакторе кода слева создайте переменную <code>name</code> и присвойте ей строку со своим именем. Затем выведите её с помощью <code>print(name)</code>.</p>
+        `,
+        starterCode: `name = "Студент"\nprint(name)`,
+        validation: (code) => {
+            // Простая проверка: есть ли в коде print и переменная name
+            return /name\s*=/.test(code) && /print\s*$\s*name\s*$/.test(code);
+        }
+    },
+    {
+        id: 1,
+        title: "02. Условные операторы (if/else)",
+        goal: "Напишите условие: если age > 18, вывести 'Доступ разрешен'.",
+        instructions: `
+            <h3>Условный оператор if</h3>
+            <p>Позволяет выполнять код только при истинности условия.</p>
+            <pre><code>age = 20
+if age >= 18:
+    print("Доступ разрешен")
+else:
+    print("Доступ запрещен")</code></pre>
+            <h3>Задание:</h3>
+            <p>Создайте переменную <code>age = 20</code>. Напишите условие: если возраст больше или равен 18, выведите <code>"Доступ разрешен"</code>.</p>
+        `,
+        starterCode: `age = 20\nif age >= 18:\n    print("Доступ разрешен")`,
+        validation: (code) => /if\s+age\s*>=\s*18:/.test(code) && /print\s*$\s*"Доступ разрешен"\s*$/.test(code)
+    },
+    {
+        id: 2,
+        title: "03. Циклы (for, while)",
+        goal: "Выведите числа от 1 до 5 с помощью цикла for.",
+        instructions: `
+            <h3>Цикл for</h3>
+            <p>Используется для перебора последовательностей. Функция range(1, 6) создаст числа от 1 до 5.</p>
+            <pre><code>for i in range(1, 6):
+    print(i)</code></pre>
+            <h3>Задание:</h3>
+            <p>Используйте цикл <code>for</code> и <code>range()</code>, чтобы вывести числа от 1 до 5.</p>
+        `,
+        starterCode: `for i in range(1, 6):\n    print(i)`,
+        validation: (code) => /for\s+i\s+in\s+range\s*$\s*1\s*,\s*6\s*$/.test(code)
+    },
+    {
+        id: 3,
+        title: "04. Списки и словари",
+        goal: "Создайте список fruits и выведите его первый элемент.",
+        instructions: `
+            <h3>Списки (Lists)</h3>
+            <p>Это упорядоченные изменяемые коллекции.</p>
+            <pre><code>fruits = ["яблоко", "банан", "груша"]
+print(fruits[0]) # Выведет "яблоко"</code></pre>
+            <h3>Задание:</h3>
+            <p>Создайте список <code>fruits</code> из трех любых фруктов и выведите первый элемент (индекс 0).</p>
+        `,
+        starterCode: `fruits = ["яблоко", "банан", "груша"]\nprint(fruits[0])`,
+        validation: (code) => /fruits\s*=/.test(code) && /print\s*$\s*fruits\s*$$\s*0\s*$$\s*$/.test(code)
+    },
+    {
+        id: 4,
+        title: "05. Создание функций",
+        goal: "Создайте функцию greet(), которая печатает 'Привет!'.",
+        instructions: `
+            <h3>Функции (def)</h3>
+            <p>Функция — это переиспользуемый блок кода.</p>
+            <pre><code>def greet():
+    print("Привет!")
+
+greet() # Вызов функции</code></pre>
+            <h3>Задание:</h3>
+            <p>Создайте функцию <code>greet</code> без аргументов, которая выводит текст <code>"Привет!"</code>, и вызовите её.</p>
+        `,
+        starterCode: `def greet():\n    print("Привет!")\n\ngreet()`,
+        validation: (code) => /def\s+greet\s*$\s*$/.test(code) && /print\s*$\s*"Привет!/.test(code) && /greet\s*$\s*$/.test(code)
+    },
+    {
+        id: 5,
+        title: "06. Аргументы и возвращаемые значения",
+        goal: "Создайте функцию sum(a, b), которая возвращает сумму.",
+        instructions: `
+            <h3>Аргументы и return</h3>
+            <p>Функции могут принимать данные и возвращать результат.</p>
+            <pre><code>def sum(a, b):
+    return a + b
+
+result = sum(5, 3)
+print(result) # 8</code></pre>
+            <h3>Задание:</h3>
+            <p>Создайте функцию <code>sum</code> с двумя аргументами, которая возвращает их сумму.</p>
+        `,
+        starterCode: `def sum(a, b):\n    return a + b\n\nprint(sum(10, 5))`,
+        validation: (code) => /def\s+sum\s*$\s*a\s*,\s*b\s*$/.test(code) && /return\s*a\s*\+\s*b/.test(code)
+    },
+    {
+        id: 6,
+        title: "07. Классы и объекты",
+        goal: "Создайте класс Car с атрибутом brand.",
+        instructions: `
+            <h3>Классы (class)</h3>
+            <p>Класс — это чертеж для создания объектов.</p>
+            <pre><code>class Car:
+    def __init__(self, brand):
+        self.brand = brand
+
+my_car = Car("Lada")
+print(my_car.brand)</code></pre>
+            <h3>Задание:</h3>
+            <p>Создайте класс <code>Car</code>. В методе <code>__init__</code> задайте атрибут <code>brand</code>.</p>
+        `,
+        starterCode: `class Car:\n    def __init__(self, brand):\n        self.brand = brand\n\ncar = Car("ВАЗ")\nprint(car.brand)`,
+        validation: (code) => /class\s+Car/.test(code) && /def\s+__init__/.test(code) && /self\.brand/.test(code)
+    },
+    {
+        id: 7,
+        title: "08. Наследование",
+        goal: "Создайте класс ElectricCar, наследуемый от Car.",
+        instructions: `
+            <h3>Наследование</h3>
+            <p>Класс-потомок получает все атрибуты и методы родителя.</p>
+            <pre><code>class ElectricCar(Car):
+    def __init__(self, brand, battery):
+        super().__init__(brand)
+        self.battery = battery</code></pre>
+            <h3>Задание:</h3>
+            <p>Создайте класс <code>ElectricCar</code>, который наследуется от <code>Car</code>.</p>
+        `,
+        starterCode: `class Car:\n    def __init__(self, brand):\n        self.brand = brand\n\nclass ElectricCar(Car):\n    def __init__(self, brand, battery):\n        super().__init__(brand)\n        self.battery = battery\n\ncar = ElectricCar("Tesla", 100)\nprint(car.brand)`,
+        validation: (code) => /class\s+ElectricCar\s*$\s*Car\s*$/.test(code) && /super\s*$\s*$\s*\.__init__/.test(code)
+    }
+];
+
+// --- ЛОГИКА ПРИЛОЖЕНИЯ ---
+const lessonList = document.getElementById('lessonList');
+const lessonTitle = document.getElementById('lessonTitle');
+const instructions = document.getElementById('instructions');
+const codeInput = document.getElementById('codeInput');
+const consoleOutput = document.getElementById('consoleOutput');
+const runBtn = document.getElementById('runBtn');
+const taskGoal = document.getElementById('taskGoal');
+
+let currentLesson = 0;
+const completedLessons = new Set();
+
+function loadLesson(id) {
+    const lesson = lessons[id];
+    currentLesson = id;
+    
+    // Обновляем сайдбар
+    document.querySelectorAll('.lesson-list button').forEach(btn => {
+        btn.classList.remove('active');
+        if (completedLessons.has(parseInt(btn.dataset.lesson))) {
+            btn.classList.add('completed');
+        }
+    });
+    lessonList.querySelector(`[data-lesson="${id}"]`).classList.add('active');
+    
+    // Обновляем контент
+    lessonTitle.textContent = lesson.title;
+    taskGoal.textContent = `Цель: ${lesson.goal}`;
+    instructions.innerHTML = lesson.instructions;
+    
+    // Если поле пустое или содержит код предыдущего урока, ставим заготовку
+    if (!codeInput.value.trim() || codeInput.value === lessons[currentLesson - 1]?.starterCode) {
+        codeInput.value = lesson.starterCode;
+    }
+    
+    consoleOutput.innerHTML = 'Вывод программы появится здесь...';
+    runBtn.disabled = false;
+}
+
+function runCode() {
+    const userCode = codeInput.value;
+    consoleOutput.innerHTML = ''; // Очищаем консоль
+    
+    // Проверка решения
+    if (lessons[currentLesson].validation(userCode)) {
+        consoleOutput.innerHTML += '<span style="color: #4caf50;">✓ Задание выполнено верно!</span><br>';
+        completedLessons.add(currentLesson);
+        // Автоматически разблокируем следующий урок
+        const nextBtn = lessonList.querySelector(`[data-lesson="${currentLesson + 1}"]`);
+        if (nextBtn && !completedLessons.has(currentLesson + 1)) {
+            nextBtn.disabled = false;
+        }
+        
+        // Если есть следующий урок, предлагаем перейти
+        if (lessons[currentLesson + 1]) {
+            if (confirm('Отлично! Решение верно. Перейти к следующему уроку?')) {
+                loadLesson(currentLesson + 1);
+            }
+        }
+    } else {
+        consoleOutput.innerHTML += '<span style="color: #ff9800;">✗ Решение неверно. Попробуйте еще раз.</span><br>';
+    }
+
+    // Запуск кода (песочница)
+    try {
+        // Сохраняем оригинальный console.log
+        const originalLog = console.log;
+        // Перехватываем вывод
+        console.log = (...args) => {
+            args.forEach(arg => {
+                const line = document.createElement('div');
+                line.textContent = String(arg);
+                consoleOutput.appendChild(line);
+            });
+            originalLog(...args); // Чтобы дебаг в консоли браузера тоже работал
+        };
+        
+        // Выполняем код пользователя в изолированном скоупе
+        // Использование new Function безопаснее, чем eval, но все равно требует осторожности
+        new Function(userCode)();
+        
+    } catch (error) {
+        consoleOutput.innerHTML += `<span style="color: #f44336;">Ошибка выполнения: ${error.message}</span>`;
+    } finally {
+        // Возвращаем console.log
+        console.log = originalLog;
+    }
+}
+
+// --- ИНИЦИАЛИЗАЦИЯ ---
+// Отключаем все кнопки кроме первой
+document.querySelectorAll('.lesson-list button').forEach((btn, index) => {
+    if (index !== 0) btn.disabled = true;
+    btn.addEventListener('click', () => loadLesson(index));
+});
+
+runBtn.addEventListener('click', runCode);
+
+// Запускаем первый урок
+loadLesson(0);
+</script>
+
+</body>
+</html>
